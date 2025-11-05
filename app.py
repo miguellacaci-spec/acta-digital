@@ -59,3 +59,8 @@ if registros:
         st.code(r["hash"], language="text")
 else:
     st.info("Todavía no hay puntos registrados.")
+# Botón para borrar el historial
+if st.button("🗑️ Borrar todo el historial"):
+    registros = []
+    guardar_registros(registros)
+    st.warning("Historial eliminado correctamente.")
