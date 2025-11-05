@@ -42,21 +42,7 @@ if st.session_state["puntos"]:
     txt = "".join(lines)
     st.download_button("Descargar acta (.txt)", txt, file_name="acta-digital.txt", mime="text/plain")
 
-import streamlit as st
-import hashlib, time, json
 
-
-
-# Archivo donde se guardan los registros
-DATA_FILE = "acta_registros.json"
-
-# 1️⃣ Cargar datos previos si existen
-def cargar_registros():
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
 
 # 2️⃣ Guardar datos nuevos
 def guardar_registros(data):
