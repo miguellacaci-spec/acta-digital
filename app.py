@@ -110,8 +110,4 @@ if st.button("Ver resultado"):
 # Prompt 9 — Subir y desplegar
 # =========================
 st.divider()
-st.markdown("""
-
-
-> **¿Quién juzga al código que juzga?**
-""")
+st.markdown(""")
