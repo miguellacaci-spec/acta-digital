@@ -1,4 +1,5 @@
 import streamlit as st
+import hashlib, time, json
 from datetime import datetime
 
 st.set_page_config(page_title="Acta Digital", layout="centered")
