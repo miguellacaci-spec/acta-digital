@@ -45,9 +45,7 @@ if st.session_state["puntos"]:
 import streamlit as st
 import hashlib, time, json
 
-# Configuración inicial
-st.set_page_config(page_title="Acta Digital con Hash", layout="centered")
-st.title("📜 Acta Digital con Registro Seguro")
+
 
 # Archivo donde se guardan los registros
 DATA_FILE = "acta_registros.json"
