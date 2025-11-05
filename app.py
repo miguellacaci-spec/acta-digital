@@ -59,4 +59,6 @@ if registros:
         st.code(r["hash"], language="text")
 else:
     st.info("Todavía no hay puntos registrados.")
+Borrar historial de acta_registros.json
+
 
