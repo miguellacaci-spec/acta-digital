@@ -1,66 +1,141 @@
+# app.py
 import streamlit as st
-import hashlib, time, json
+import hashlib, time, json, secrets
 
-# Configuración inicial
-st.set_page_config(page_title="Acta Digital con Hash", layout="centered")
-st.title("📜 Acta Digital con Registro Seguro")
+# =========================
+# Prompt 3 — Función de hash
+# =========================
+def get_hash(text):
+    return hashlib.sha256(text.encode()).hexdigest()
 
-# Archivo donde se guardan los registros
-DATA_FILE = "acta_registros.json"
+st.title("🔐 Registro y Votación de Documentos Digitales")
 
-# 1️⃣ Cargar datos previos si existen
-def cargar_registros():
+# Campo para probar el hash
+st.subheader("🧩 Prueba de Hash")
+text_to_hash = st.text_input("Escribe algo para calcular su hash:")
+if text_to_hash:
+    st.write("Hash generado:", get_hash(text_to_hash))
+
+# =========================
+# Prompt 4 — Interfaz de registro
+# =========================
+st.header("📜 Registro de Documentos")
+owner = st.text_input("Propietario del documento")
+content = st.text_area("Contenido del documento")
+
+if st.button("Registrar"):
+    if content.strip():
+        record = {"owner": owner or "Anónimo", "hash": get_hash(content), "time": time.time()}
+        with open("blockchain.json", "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+        st.success("✅ Documento registrado con éxito")
+    else:
+        st.warning("Por favor, escribe contenido antes de registrar.")
+
+# =========================
+# Prompt 5 — Verificación de integridad
+# =========================
+def verify(content):
+    h = get_hash(content)
     try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+        with open("blockchain.json", "r", encoding="utf-8") as f:
+            for line in f:
+                r = json.loads(line)
+                if r["hash"] == h:
+                    return True
     except FileNotFoundError:
-        return []
+        return False
+    return False
 
-# 2️⃣ Guardar datos nuevos
-def guardar_registros(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+st.subheader("🔍 Verificar integridad")
+verify_content = st.text_area("Escribe el contenido para verificar:")
+if st.button("Verificar"):
+    if verify_content.strip():
+        if verify(verify_content):
+            st.success("✅ Este documento ya estaba registrado.")
+        else:
+            st.error("❌ No se encontró este documento en la cadena.")
+    else:
+        st.warning("Escribe contenido para verificar.")
 
-# 3️⃣ Calcular hash de cada punto (texto + tiempo)
-def calcular_hash(texto, timestamp):
-    bloque = f"{texto}{timestamp}".encode("utf-8")
-    return hashlib.sha256(bloque).hexdigest()
+# =========================
+# Prompt 6 — Firma digital
+# =========================
+st.header("🖋️ Firma Digital")
+private_key = secrets.token_hex(16)
+public_key = get_hash(private_key)
 
-# Cargar registros previos
-registros = cargar_registros()
+st.write("Tu clave pública (identifica al usuario):")
+st.code(public_key)
+st.info("La clave pública identifica; la privada da poder para firmar documentos.")
 
-# 4️⃣ Formulario para crear un punto nuevo
-st.subheader("Añadir nuevo punto al acta")
-with st.form("nuevo_punto"):
-    punto = st.text_area("Escribe el contenido del punto:", height=120)
-    autor = st.text_input("Autor")
-    enviar = st.form_submit_button("Guardar punto")
+# =========================
+# Prompt 7 — Sistema de votación simple
+# =========================
+st.header("🗳️ Votación de validez")
+doc_hash = st.text_input("Hash del documento a votar")
+vote = st.radio("¿Consideras que este documento es válido?", ["Sí", "No"])
 
-# 5️⃣ Guardar el punto si se envía
-if enviar and punto.strip():
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    hash_punto = calcular_hash(punto, timestamp)
-    nuevo = {
-        "texto": punto.strip(),
-        "autor": autor.strip() or "Anónimo",
-        "fecha": timestamp,
-        "hash": hash_punto
-    }
-    registros.append(nuevo)
-    guardar_registros(registros)
-    st.success("✅ Punto añadido correctamente.")
+if st.button("Votar"):
+    if doc_hash.strip():
+        with open("votes.json", "a", encoding="utf-8") as f:
+            f.write(json.dumps({"hash": doc_hash, "vote": vote}) + "\n")
+        st.success("🗳️ Voto registrado correctamente.")
+    else:
+        st.warning("Introduce el hash del documento antes de votar.")
 
-# 6️⃣ Mostrar los registros existentes
-st.subheader("📚 Historial del acta")
-if registros:
-    for i, r in enumerate(registros, start=1):
-        st.markdown(f"**{i}. {r['texto']}**")
-        st.caption(f"Autor: {r['autor']} · Fecha: {r['fecha']}")
-        st.code(r["hash"], language="text")
-else:
-    st.info("Todavía no hay puntos registrados.")
-# Botón para borrar el historial
-if st.button("🗑️ Borrar todo el historial"):
-    registros = []
-    guardar_registros(registros)
-    st.warning("Historial eliminado correctamente.")
+# =========================
+# Prompt 8 — Resultado de la votación
+# =========================
+def count_votes():
+    yes, no = 0, 0
+    try:
+        with open("votes.json", "r", encoding="utf-8") as f:
+            for line in f:
+                v = json.loads(line)
+                if v["vote"] == "Sí":
+                    yes += 1
+                else:
+                    no += 1
+    except FileNotFoundError:
+        pass
+    return yes, no
+
+if st.button("Ver resultado"):
+    y, n = count_votes()
+    st.write(f"🟢 Sí: {y} | 🔴 No: {n}")
+    st.caption("El código ejecuta la decisión, pero no analiza si es justa.")
+
+# =========================
+# Prompt 9 — Subir y desplegar
+# =========================
+st.divider()
+st.markdown("""
+### 🚀 Despliegue
+1. Guarda este archivo (`app.py`).
+2. Sube también los archivos vacíos `blockchain.json` y `votes.json` a tu repositorio de GitHub.
+3. Ve a [Streamlit Cloud](https://share.streamlit.io), conéctalo a tu cuenta de GitHub.
+4. Elige el repositorio **acta-digital** y ejecuta la app.
+5. Comparte el enlace con tus compañeros.
+""")
+
+# =========================
+# Prompt 10 — Reflexión final
+# =========================
+st.divider()
+st.subheader("💭 Reflexión final")
+st.markdown("""
+Has construido un sistema donde:
+- Se **prueba que algo existía** (registro).
+- Se **firma digitalmente** (clave pública y privada).
+- Se **vota su validez** (votación colectiva).
+
+Pero… ¿quién garantiza que la decisión sea justa?
+
+👉 **Conclusión:**  
+El código puede registrar, ejecutar y decidir,  
+pero no puede entender el *por qué* de lo que hace.  
+Por eso, detrás de cada blockchain, sigue habiendo una pregunta humana:
+
+> **¿Quién juzga al código que juzga?**
+""")
