@@ -111,31 +111,7 @@ if st.button("Ver resultado"):
 # =========================
 st.divider()
 st.markdown("""
-### 🚀 Despliegue
-1. Guarda este archivo (`app.py`).
-2. Sube también los archivos vacíos `blockchain.json` y `votes.json` a tu repositorio de GitHub.
-3. Ve a [Streamlit Cloud](https://share.streamlit.io), conéctalo a tu cuenta de GitHub.
-4. Elige el repositorio **acta-digital** y ejecuta la app.
-5. Comparte el enlace con tus compañeros.
-""")
 
-# =========================
-# Prompt 10 — Reflexión final
-# =========================
-st.divider()
-st.subheader("💭 Reflexión final")
-st.markdown("""
-Has construido un sistema donde:
-- Se **prueba que algo existía** (registro).
-- Se **firma digitalmente** (clave pública y privada).
-- Se **vota su validez** (votación colectiva).
-
-Pero… ¿quién garantiza que la decisión sea justa?
-
-👉 **Conclusión:**  
-El código puede registrar, ejecutar y decidir,  
-pero no puede entender el *por qué* de lo que hace.  
-Por eso, detrás de cada blockchain, sigue habiendo una pregunta humana:
 
 > **¿Quién juzga al código que juzga?**
 """)
